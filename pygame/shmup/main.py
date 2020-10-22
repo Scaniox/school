@@ -1,4 +1,6 @@
 # pygame shmup game
+
+# i have made some edits here
 #modules---------------------------------------------------------------------------
 import pygame, random
 
