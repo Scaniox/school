@@ -1,5 +1,4 @@
-# pygame skeleton template
-
+# pygame shmup game
 #modules---------------------------------------------------------------------------
 import pygame, random
 
