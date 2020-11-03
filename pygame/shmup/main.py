@@ -36,6 +36,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = ssize[0] // 2
         self.rect.bottom = ssize[1]-10
         self.velocity = [0,0]
+        # collision data
+        self.radius = 20
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -73,18 +75,32 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # sprite image
-        self.image = meteor_img
-        self.image.set_colorkey((0,0,0))
-
-        # sprite movement
         self.respawn()
+        self.rot = 0
+        self.rot_velocity = random.random()*8-4
+        self.last_update = pygame.time.get_ticks()
+
+        # collision data
+        self.radius = self.rect.width//2.2
 
 
     def update(self):
         # move
         for i in [0,1]:
             self.rect[i] += self.velocity[i]
+
+        # rotation
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 10:
+            self.last_update = now
+            self.rot = (self.rot + self.rot_velocity) % 360
+            new_image = pygame.transform.rotate(self.original_image, self.rot)
+            # handle rect changes
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = self.image.get_rect()
+            self.rect.center = old_center
+
 
         # respawn if off screen
         if self.rect.top > ssize[1] or \
@@ -94,9 +110,15 @@ class Mob(pygame.sprite.Sprite):
 
 
     def respawn(self):
+        # sprite image
+        self.original_image = random.choice(meteor_imgs)
+        self.original_image.set_colorkey((0,0,0))
+        self.image = self.original_image.copy()
+
+        # sprite movement
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, ssize[0]- self.rect.width)
-        self.rect.y = random.randint(-100, -40)
+        self.rect.y = random.randint(-150, -100)
         self.velocity = [random.random()*4-2,\
                       random.random()*5+1]
 
@@ -126,13 +148,18 @@ class Bullet(pygame.sprite.Sprite):
 
 
 #object inits--------------------------------------------------------------------------------------
-#¬image asset init
+#¬ image asset init
 background_img = pygame.image.load(str(img_dir / "background_blue.png")).convert()
 scaled_background = pygame.transform.scale(background_img, ssize)
 
 player_img = pygame.image.load(str(img_dir / "playerShip1_blue.png")).convert()
-meteor_img = pygame.image.load(str(img_dir / "meteorBrown_big1.png")).convert()
 bullet_img = pygame.image.load(str(img_dir / "laserBlue01.png")).convert()
+
+#¬¬ load all images in Meteors folder
+meteor_imgs = []
+for image in (img_dir / "Meteors").iterdir():
+    meteor_imgs.append(pygame.image.load(str(image)).convert())
+
 
 #¬ group generation
 clock = pygame.time.Clock()
@@ -178,7 +205,7 @@ while running:
         hit_mob.respawn()
 
     #¬ mob - player collision
-    hits = pygame.sprite.spritecollide(player, mobs, False)
+    hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
     if hits:
         running = False
 
