@@ -18,6 +18,7 @@ screen = pygame.display.set_mode(ssize)
 pygame.display.set_caption("Shmup")
 clock = pygame.time.Clock()
 
+convert_assets(screen)
 
 # different loops
 loops = {"game" : game_loop.run_game, "start" : menus.run_start}
@@ -33,7 +34,10 @@ while running:
 
     feedback = loops[loop_history[-1]](screen)
     for request in feedback:
-        if request[:7] == "switch:":
+        if request == "exit":
+            running = False
+
+        elif request[:7] == "switch:":
             destination = request[7:]
             if destination in loops.keys():
                 loop_history.append(destination)

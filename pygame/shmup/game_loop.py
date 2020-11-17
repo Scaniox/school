@@ -13,23 +13,23 @@ score = 0
 
 #object inits--------------------------------------------------------------------------------------
 #¬ group generation
-all_sprites = pygame.sprite.Group()
-mobs = pygame.sprite.Group()
-bullets = pygame.sprite.Group()
-powerups = pygame.sprite.Group()
+groups = {  "all_sprites" : pygame.sprite.Group(),
+            "mobs" : pygame.sprite.Group(),
+            "bullets" : pygame.sprite.Group(),
+            "powerups" : pygame.sprite.Group(), }
+
 
 #¬ generate player
-player = Player()
-all_sprites.add(player)
+player = Player(groups)
+groups["all_sprites"].add(player)
 
 #¬ generate mobs
 for i in range(8):
     m = Mob()
-    all_sprites.add(m)
-    mobs.add(m)
+    groups["all_sprites"].add(m)
+    groups["mobs"].add(m)
 
 
-print()
 
 def run_game(screen):
     global score
@@ -40,37 +40,36 @@ def run_game(screen):
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
-            running = False
-            break
+            feedback.append("exit")
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             feedback.append("switch:pause")
 
     # update
-    all_sprites.update()
+    groups["all_sprites"].update()
 
     #collisions
     #¬ bullet - mob collision
-    hits = pygame.sprite.groupcollide(mobs, bullets, False, True)
+    hits = pygame.sprite.groupcollide(groups["mobs"], groups["bullets"], False, True)
     for hit_mob in hits:
         #score
         score += round(100 - hit_mob.radius)
 
         # explosions
         expl = Explosion(hit_mob.rect.center, "L")
-        all_sprites.add(expl)
+        groups["all_sprites"].add(expl)
         random.choice(meteor_expl_snd).play()
 
         # spawn powerups
         if random.random() > 0.9:
             pow = Pow(hit_mob.rect.center)
-            all_sprites.add(pow)
-            powerups.add(pow)
+            groups["all_sprites"].add(pow)
+            groups["powerups"].add(pow)
 
         hit_mob.respawn()
 
     #¬ mob - player collision
-    hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
+    hits = pygame.sprite.spritecollide(player, groups["mobs"], False, pygame.sprite.collide_circle)
     for hit_mob in hits:
         # reduce shield
         player.shield -= hit_mob.radius
@@ -78,18 +77,18 @@ def run_game(screen):
         # cause player death
         if player.shield <= 0:
             death_expl = Explosion(player.rect.center, "P")
-            all_sprites.add(death_expl)
+            groups["all_sprites"].add(death_expl)
             die_sound.play()
             player.hide()
             player.lives -= 1
             player.shield = 100
 
         expl = Explosion(hit_mob.rect.center, "S")
-        all_sprites.add(expl)
+        groups["all_sprites"].add(expl)
         hit_mob.respawn()
 
     # powerup player collide
-    hits = pygame.sprite.spritecollide(player, powerups, True)
+    hits = pygame.sprite.spritecollide(player, groups["powerups"], True)
     for hit_p_up in hits:
         # shield power up
         if hit_p_up.type == "shield":
@@ -108,7 +107,7 @@ def run_game(screen):
 
     # display
     screen.blit(scaled_background, [0,0])
-    all_sprites.draw(screen)
+    groups["all_sprites"].draw(screen)
 
     draw_text(screen, str(score), (200,200,0), 28, (ssize[0]//2, 15))
     draw_bar(screen, [5,5], player.shield)

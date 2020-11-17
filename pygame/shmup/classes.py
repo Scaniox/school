@@ -5,13 +5,13 @@ from pathlib import Path
 from config import *
 from assets import *
 
-
 #classes-------------------------------------------------------------------------------------------
 
 # player sprite
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, groups):
         super().__init__()
+        self.groups = groups
         # sprite image
         self.image = pygame.transform.scale(player_img, [50,38])
         self.image.set_colorkey((0,0,0))
@@ -90,15 +90,15 @@ class Player(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         if self.power == 1:
             bullet = Bullet(self.rect.centerx, self.rect.top)
-            all_sprites.add(bullet)
-            bullets.add(bullet)
+            self.groups["all_sprites"].add(bullet)
+            self.groups["bullets"].add(bullet)
             shoot_sound.play()
 
         elif self.power == 2:
             bullet_L = Bullet(self.rect.left, self.rect.centery)
             bullet_R = Bullet(self.rect.right, self.rect.centery)
-            all_sprites.add(bullet_L, bullet_R)
-            bullets.add(bullet_L, bullet_R)
+            self.groups["all_sprites"].add(bullet_L, bullet_R)
+            self.groups["bullets"].add(bullet_L, bullet_R)
             shoot_sound.play()
 
 
@@ -131,6 +131,7 @@ class Mob(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         if now - self.last_update > 10:
             self.last_update = now
+
             self.rot = (self.rot + self.rot_velocity) % 360
             new_image = pygame.transform.rotate(self.original_image, self.rot)
             # handle rect changes

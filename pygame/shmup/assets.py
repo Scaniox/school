@@ -3,11 +3,22 @@ import pygame, random
 from pathlib import Path
 from config import *
 
+image_list = ["scaled_background",
+              "player_img",
+              "player_live_img",
+              "bullet_img"]
 
-pygame.init()
+
+def convert_assets(screen):
+    for image in image_list:
+        exec(f"{image}").convert()
+
+    for i in range(len(meteor_imgs)):
+        meteor_imgs[i].convert(screen)
+
+    for key 
+
 pygame.mixer.init()
-
-
 #¬ image asset init
 background_img = pygame.image.load(str(img_dir / "background_blue.png"))#.convert()
 scaled_background = pygame.transform.scale(background_img, ssize)
@@ -21,7 +32,9 @@ bullet_img = pygame.image.load(str(img_dir / "laserBlue01.png"))#.convert()
 #¬¬ load all images in Meteors folder
 meteor_imgs = []
 for image in (img_dir / "Meteors").iterdir():
-    meteor_imgs.append(pygame.image.load(str(image)))#.convert())
+    img = pygame.image.load(str(image))#.convert())
+    img.set_colorkey((0,0,0))
+    meteor_imgs.append(img)
 
 #¬¬ explosion images
 expl_anim = {}
