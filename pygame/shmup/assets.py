@@ -3,36 +3,25 @@ import pygame, random
 from pathlib import Path
 from config import *
 
-image_list = ["scaled_background",
-              "player_img",
-              "player_live_img",
-              "bullet_img"]
-
-
-def convert_assets(screen):
-    for image in image_list:
-        exec(f"{image}").convert()
-
-    for i in range(len(meteor_imgs)):
-        meteor_imgs[i].convert(screen)
-
-    for key 
 
 pygame.mixer.init()
+pygame.init()
+screen = pygame.display.set_mode([1,1]) # screen for converting assets
+
 #¬ image asset init
-background_img = pygame.image.load(str(img_dir / "background_blue.png"))#.convert()
+background_img = pygame.image.load(str(img_dir / "background_blue.png")).convert()
 scaled_background = pygame.transform.scale(background_img, ssize)
 
-player_img = pygame.image.load(str(img_dir / "playerShip1_blue.png"))#.convert()
+player_img = pygame.image.load(str(img_dir / "playerShip1_blue.png")).convert()
 player_live_img = pygame.transform.scale(player_img.copy(), (25,19))
 player_live_img.set_colorkey((0,0,0))
 
-bullet_img = pygame.image.load(str(img_dir / "laserBlue01.png"))#.convert()
+bullet_img = pygame.image.load(str(img_dir / "laserBlue01.png")).convert()
 
 #¬¬ load all images in Meteors folder
 meteor_imgs = []
 for image in (img_dir / "Meteors").iterdir():
-    img = pygame.image.load(str(image))#.convert())
+    img = pygame.image.load(str(image)).convert()
     img.set_colorkey((0,0,0))
     meteor_imgs.append(img)
 
@@ -43,19 +32,19 @@ expl_anim["L"] = []
 expl_anim["P"] = []
 
 for i in range(9):
-    img = pygame.image.load(str(img_dir / "explosions" / f"regularExplosion0{i}.png"))#.convert()
+    img = pygame.image.load(str(img_dir / "explosions" / f"regularExplosion0{i}.png")).convert()
     img.set_colorkey((0,0,0))
     expl_anim["L"].append(pygame.transform.scale(img, (75,75)))
     expl_anim["S"].append(pygame.transform.scale(img, (32,32)))
 
-    img = pygame.image.load(str(img_dir / "explosions" / f"sonicExplosion0{i}.png"))#.convert()
+    img = pygame.image.load(str(img_dir / "explosions" / f"sonicExplosion0{i}.png")).convert()
     img.set_colorkey((0,0,0))
     expl_anim["P"].append(pygame.transform.scale(img, (150,150)))
 
 #¬¬ powerup images
 powerup_images = {}
-powerup_images["shield"] = pygame.image.load(str(img_dir / "powerupGreen_shield.png"))#.convert()
-powerup_images["gun"] = pygame.image.load(str(img_dir / "powerupRed_bolt.png"))#.convert()
+powerup_images["shield"] = pygame.image.load(str(img_dir / "powerupGreen_shield.png")).convert()
+powerup_images["gun"] = pygame.image.load(str(img_dir / "powerupRed_bolt.png")).convert()
 for image in powerup_images.values():
     image.set_colorkey((0,0,0))
 
@@ -72,3 +61,4 @@ meteor_expl_snd = [pygame.mixer.Sound(str(snd_dir / name)) for name in ["Explosi
 """pygame.mixer.music.load(str(snd_dir / "tgfcoder-FrozenJam-SeamlessLoop.ogg"))
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play()"""
+pygame.quit()

@@ -114,8 +114,6 @@ class Mob(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.respawn()
-        self.rot = 0
-        self.rot_velocity = random.random()*8-4
         self.last_update = pygame.time.get_ticks()
 
         # collision data
@@ -137,6 +135,7 @@ class Mob(pygame.sprite.Sprite):
             # handle rect changes
             old_center = self.rect.center
             self.image = new_image
+            self.image.set_colorkey((0,0,0))
             self.rect = self.image.get_rect()
             self.rect.center = old_center
 
@@ -151,15 +150,17 @@ class Mob(pygame.sprite.Sprite):
     def respawn(self):
         # sprite image
         self.original_image = random.choice(meteor_imgs)
-        self.original_image.set_colorkey((0,0,0))
         self.image = self.original_image.copy()
 
         # sprite movement
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, ssize[0]- self.rect.width)
-        self.rect.y = random.randint(-150, -100)
-        self.velocity = [random.random()*4-2,\
+        self.rect.y = 50 #random.randint(-150, -100)
+        self.velocity = [random.random()*2-1,\
                       random.random()*5+1]
+        # rotations
+        self.rot = 0
+        self.rot_velocity = random.random()*8-4
 
 
 # bullet sprite
