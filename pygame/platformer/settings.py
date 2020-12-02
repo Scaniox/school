@@ -1,17 +1,19 @@
 # game options and settings
 
 #constants
-title = "Jumpy"
+TITLE = "Jumpy"
 ssize = (480, 600)
 fps = 60
-font_name = "arial"
-hs_file = "highscore.txt"
+FONT_NAME = "arial"
+HS_FILE = "highscore.txt"
+SPRITE_SHEET = "spritesheet_jumper.png"
+
 
 # player properties
-player_acc = 0.5
-player_friction = -0.12
-player_grav = 0.8
-player_jump_strength = 20
+PLAYER_ACC = 0.5
+PLAYER_FRICTION = -0.12
+PLAYER_GRAV = 0.8
+PLAYER_JUMP_STRENGTH = 20
 
 # starting platforms
 platform_list = [   (0,ssize[1]-40, ssize[0], 40),
@@ -21,4 +23,4 @@ platform_list = [   (0,ssize[1]-40, ssize[0], 40),
                     (175, 100, 50, 20)]
 
 # colour schemes
-bg_colour = (64,128,255)
+BG_COLOUR = (64,128,255)
