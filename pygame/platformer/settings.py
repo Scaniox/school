@@ -5,6 +5,7 @@ title = "Jumpy"
 ssize = (480, 600)
 fps = 60
 font_name = "arial"
+hs_file = "highscore.txt"
 
 # player properties
 player_acc = 0.5
@@ -18,3 +19,6 @@ platform_list = [   (0,ssize[1]-40, ssize[0], 40),
                     (125, ssize[1] -350, 100, 20),
                     (350, 200, 100, 20),
                     (175, 100, 50, 20)]
+
+# colour schemes
+bg_colour = (64,128,255)

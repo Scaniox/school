@@ -3,6 +3,7 @@
 import pygame as pg, random
 from settings import *
 from sprites import *
+from pathlib import Path
 
 
 class Game():
@@ -14,6 +15,10 @@ class Game():
         pg.display.set_caption(title)
         self.running = True
         self.font_name = pg.font.match_font(font_name)
+        self.load_data()
+
+    def load_data(self):
+        self.dir = Path(__file__)
 
 
     # start a new game
@@ -108,7 +113,7 @@ class Game():
 
     #game loop - draw
     def draw(self):
-        self.screen.fill((0,0,0))
+        self.screen.fill(bg_colour)
         self.all_sprites.draw(self.screen)
         self.draw_text(str(self.score), 22, (255,255,255), ssize[0]//2, 15)
         pg.display.flip()
@@ -116,12 +121,38 @@ class Game():
 
     # game start screen
     def show_start_screen(self):
-        pass
-
+        self.screen.fill(bg_colour)
+        self.draw_text(title, 40, (255,255,255), ssize[0]//2, ssize[1]/4 )
+        self.draw_text("Arrows to move , space to jump", 22, (255,255,255), ssize[0]/2, ssize[1]/2)
+        self.draw_text("press a key to start", 22, (255,255,255), ssize[0]/2, ssize[1] * 3/4)
+        pg.display.flip()
+        self.wait_for_key()
 
     # game over screen
     def show_go_screen(self):
-        pass
+        # skip if closing window so it closes instantly
+        if not self.running:
+            return
+
+        self.screen.fill((255,0,0))
+        self.draw_text("Game Over", 40, (255,255,255), ssize[0]//2, ssize[1]/4 )
+        self.draw_text(f"Score : {self.score}", 22, (255,255,255), ssize[0]/2, ssize[1]/2)
+        self.draw_text("press a key to play again", 22, (255,255,255), ssize[0]/2, ssize[1] * 3/4)
+        pg.display.flip()
+        self.wait_for_key()
+
+
+
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(fps)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                if event.type == pg.KEYUP:
+                    waiting = False
 
 
     # draws text
