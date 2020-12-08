@@ -1,3 +1,6 @@
+#"Yippee" song by Snabisch: http://opengameart.org/content/yippee-0
+#"Happy Tune" song by syncopika: https://opengameart.org/content/happy-tune
+
 # main file to run the jumpy platform game
 # modules
 import pygame as pg, random
@@ -20,8 +23,8 @@ class Game():
     def load_data(self):
         # load assets
         self.dir = Path(__file__).parent
-        img_dir = self.dir / "img"
-        snd_dir = self.dir / "snd"
+        self.img_dir = self.dir / "img"
+        self.snd_dir = self.dir / "snd"
 
         # load high score from file
         try:
@@ -30,32 +33,39 @@ class Game():
             self.highscore = 0
 
         # load spritesheet
-        self.spritesheet = Spritesheet(str(img_dir / SPRITE_SHEET))
+        self.spritesheet = Spritesheet(str(self.img_dir / SPRITE_SHEET))
+
+        # load sound
+        self.jump_sound = pg.mixer.Sound(str(self.snd_dir / "Jump8.wav"))
+        self.boost_sound = pg.mixer.Sound(str(self.snd_dir / "boost.wav"))
 
     def new(self):
         # start a new game
         self.score = 0
 
+        # groups
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
+        self.powerups = pg.sprite.Group()
 
         self.player = Player(self)
-        self.all_sprites.add(self.player)
 
         for plat in platform_list:
-            p = Platform(*plat)
-            self.all_sprites.add(p)
-            self.platforms.add(p)
+            p = Platform(self, *plat)
+
+        # music
+        pg.mixer.music.load(str(self.snd_dir / "021914bgm2(happytune).wav"))
 
     def run(self):
         # game loop
+        pg.mixer.music.play(loops=-1)
         self.playing = True
-
         while self.playing:
             self.clock.tick(fps)
             self.events()
             self.update()
             self.draw()
+        pg.mixer.music.fadeout(500)
 
     def events(self):
         # game loop - events
@@ -67,6 +77,10 @@ class Game():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
+
+            elif event.type == pg.KEYUP:
+                if event.key == pg.K_SPACE:
+                    self.player.jump_cut()
 
     def update(self):
         # game loop - update
@@ -81,17 +95,31 @@ class Game():
             self.player.pos.y -= 1
 
             if hits:
-                self.player.pos.y = hits[0].rect.top
-                self.player.vel.y = 0
+                # collide with lowest platform
+                lowest = max(hits, key=lambda hit: hit.rect.top)
+                if lowest.rect.left-10 < self.player.pos.x < lowest.rect.right+10:
+                    if self.player.pos.y < lowest.rect.centery:
+                        self.player.pos.y = lowest.rect.top
+                        self.player.vel.y = 0
+                        self.player.jumping = False
 
-        # scrolling
+
+        #¬ player powerup collisons
+        hits = pg.sprite.spritecollide(self.player, self.powerups, True)
+        for hit in hits:
+            if hit.type == "boost":
+                self.boost_sound.play()
+                self.player.vel.y = -BOOST_POWER
+                self.player.jumping = False
+
+        # scrolling if player in top 1/4 of screen
         if self.player.rect.top <= ssize[1]/4:
             # move player down
-            self.player.pos.y += abs(self.player.vel.y)
+            self.player.pos.y += max(abs(self.player.vel.y), 2)
 
             #move platforms down
             for plat in self.platforms:
-                plat.rect.y += abs(self.player.vel.y)
+                plat.rect.y += max(abs(self.player.vel.y), 2)
                 # remove off screen platforms
                 if plat.rect.top > ssize[1]:
                     plat.kill()
@@ -110,23 +138,25 @@ class Game():
 
         # spawn new platforms:
         while len(self.platforms) < 6:
-            width = random.randrange(50,100)
             x = random.randrange(0, ssize[0]-1)
-            y = random.randrange(-75, -30)
-            p = Platform(x, y, width, 20)
-
-            self.all_sprites.add(p)
-            self.platforms.add(p)
+            y = random.randrange(-55, -30)
+            p = Platform(self, x, y)
 
     def draw(self):
         #game loop - draw
         self.screen.fill(BG_COLOUR)
         self.all_sprites.draw(self.screen)
+        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, (255,255,255), ssize[0]//2, 15)
         pg.display.flip()
 
     def show_start_screen(self):
         # game start screen
+
+        # music
+        pg.mixer.music.load(str(self.snd_dir / "Yippee.wav"))
+        pg.mixer.music.play(loops=-1)
+
         self.screen.fill(BG_COLOUR)
         self.draw_text(TITLE, 40, (255,255,255), ssize[0]//2, ssize[1]/4 )
         self.draw_text("Arrows to move , space to jump", 22, (255,255,255), ssize[0]/2, ssize[1]/2)
@@ -135,11 +165,17 @@ class Game():
         pg.display.flip()
         self.wait_for_key()
 
+        pg.mixer.music.fadeout(500)
+
     def show_go_screen(self):
         # game over screen
         # skip if closing window so it closes instantly
         if not self.running:
             return
+
+        # music
+        pg.mixer.music.load(str(self.snd_dir / "Yippee.wav"))
+        pg.mixer.music.play(loops=-1)
 
         self.screen.fill((255,0,0))
         self.draw_text("Game Over", 40, (255,255,255), ssize[0]//2, ssize[1] / 4 )
@@ -155,6 +191,8 @@ class Game():
 
         pg.display.flip()
         self.wait_for_key()
+
+        pg.mixer.music.fadeout(500)
 
     def wait_for_key(self):
         # delay until a key is pressed

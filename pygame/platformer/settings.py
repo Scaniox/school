@@ -15,12 +15,16 @@ PLAYER_FRICTION = -0.12
 PLAYER_GRAV = 0.8
 PLAYER_JUMP_STRENGTH = 20
 
+# game properties
+BOOST_POWER = 60
+POW_SPAWN_PCT = 7
+
 # starting platforms
-platform_list = [   (0,ssize[1]-40, ssize[0], 40),
-                    (ssize[0]/2 - 50, ssize[1]* 3/4, 100, 20),
-                    (125, ssize[1] -350, 100, 20),
-                    (350, 200, 100, 20),
-                    (175, 100, 50, 20)]
+platform_list = [   (0, ssize[1] - 60),
+                    (ssize[0]/2 - 50, ssize[1]* 3/4),
+                    (125, ssize[1] - 350),
+                    (350, 200),
+                    (175, 100)]
 
 # colour schemes
 BG_COLOUR = (64,128,255)

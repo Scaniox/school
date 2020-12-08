@@ -4,6 +4,7 @@ from settings import *
 import pygame as pg
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from random import choice, randint
 
 vec = pg.math.Vector2
 
@@ -34,7 +35,8 @@ class Spritesheet():
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
-        super().__init__()
+        self.groups = [game.all_sprites]
+        super().__init__(self.groups)
         self.game = game
         # animation
         self.walking = False
@@ -47,7 +49,7 @@ class Player(pg.sprite.Sprite):
         # rect
         self.rect = self.image.get_rect()
         self.rect.center = [i//2 for i in ssize]
-        self.pos = vec([i//2 for i in ssize])
+        self.pos = vec(40, ssize[1] - 100)
         self.vel = vec(0,0)
         self.acc = vec(0,0)
 
@@ -66,12 +68,20 @@ class Player(pg.sprite.Sprite):
         self.jump_frame = self.game.spritesheet.get_image("bunny1_jump.png")
 
     def jump(self):
-        self.rect.y += 1
+        self.rect.y += 2
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.y -= 1
+        self.rect.y -= 2
 
-        if hits:
+        if hits and not self.jumping:
+            self.game.jump_sound.play()
+            self.jumping = True
             self.vel.y = -PLAYER_JUMP_STRENGTH
+
+    def jump_cut(self):
+        if self.jumping:
+            if self.vel.y < -3:
+                self.vel.y = -3
+                self.jumping = False
 
     def update(self):
         self.animate()
@@ -91,6 +101,7 @@ class Player(pg.sprite.Sprite):
         self.vel += self.acc                    # velocity
         self.pos += self.vel + 0.5 * self.acc   # displacement
         image_size = self.image.get_size()
+
         # sceen edge wraparound
         if self.pos.x < 0 - image_size[0] // 2:
             self.pos.x = ssize[0] + image_size[0] // 2
@@ -133,10 +144,42 @@ class Player(pg.sprite.Sprite):
 
 
 class Platform(pg.sprite.Sprite):
-    def __init__(self, x, y, w, h):
-        super().__init__()
-        self.image = pg.Surface((w,h))
-        self.image.fill((0,255,0))
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.platforms
+
+        super().__init__(self.groups)
+        self.game = game
+        images = [  self.game.spritesheet.get_image("ground_grass.png"),
+                    self.game.spritesheet.get_image("ground_grass_small.png")]
+        images = [pg.transform.scale(img, [dim//2 for dim in img.get_size()]) for img in images]
+
+        self.image = choice(images)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+        if randint(0,100) < POW_SPAWN_PCT:
+            Power_up(self.game, self)
+
+
+class Power_up(pg.sprite.Sprite):
+    def __init__(self, game, plat):
+        self.groups = game.all_sprites, game.powerups
+
+        super().__init__(self.groups)
+        self.game = game
+        self.plat = plat
+        self.type = choice(["boost"])
+
+        image = self.game.spritesheet.get_image("powerup_jetpack.png")
+        self.image = pg.transform.scale(image, [dim//2 for dim in image.get_size()])
+
+        self.rect = self.image.get_rect()
+        self.rect.x = self.plat.rect.x
+        self.rect.bottom = self.plat.rect.top - 5
+
+    def update(self):
+        if self.game.platforms.has(self.plat):
+            self.rect.bottom = self.plat.rect.top - 5
+        else:
+            self.kill()
