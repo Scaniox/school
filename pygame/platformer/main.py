@@ -34,6 +34,7 @@ class Game():
 
         # load spritesheet
         self.spritesheet = Spritesheet(str(self.img_dir / SPRITE_SHEET))
+        self.cloud_imgs = [pg.image.load(str(self.img_dir / f"cloud{i}.png")).convert() for i in [1,2,3]]
 
         # load sound
         self.jump_sound = pg.mixer.Sound(str(self.snd_dir / "Jump8.wav"))
@@ -42,11 +43,14 @@ class Game():
     def new(self):
         # start a new game
         self.score = 0
+        self.mob_timer = 0 # tracks mob spawning
 
         # groups
-        self.all_sprites = pg.sprite.Group()
+        self.all_sprites = pg.sprite.LayeredUpdates()
         self.platforms = pg.sprite.Group()
         self.powerups = pg.sprite.Group()
+        self.mobs = pg.sprite.Group()
+        self.clouds = pg.sprite.Group()
 
         self.player = Player(self)
 
@@ -58,7 +62,7 @@ class Game():
 
     def run(self):
         # game loop
-        pg.mixer.music.play(loops=-1)
+        #pg.mixer.music.play(loops=-1)
         self.playing = True
         while self.playing:
             self.clock.tick(fps)
@@ -86,6 +90,13 @@ class Game():
         # game loop - update
         self.all_sprites.update()
 
+        # mob spawning
+        now = pg.time.get_ticks()
+        if now - self.mob_timer > MOB_FREQ + random.randrange(-1000, 1000, 500):
+            self.mob_timer = now
+            Mob(self)
+
+
         # collisions
         #¬ player platform collisions
         if self.player.vel.y > 0:
@@ -112,18 +123,41 @@ class Game():
                 self.player.vel.y = -BOOST_POWER
                 self.player.jumping = False
 
+        #¬ player mob collsions
+        mob_hits = pg.sprite.spritecollide(self.player, self.mobs, False, pg.sprite.collide_mask)
+        if mob_hits:
+            self.playing = False
+
         # scrolling if player in top 1/4 of screen
         if self.player.rect.top <= ssize[1]/4:
             # move player down
-            self.player.pos.y += max(abs(self.player.vel.y), 2)
+            self.player.pos.y += max(abs(self.player.vel. y), 2)
 
-            #move platforms down
+            # spawn clouds
+            if random.randint(0, 10) > 5:
+                Cloud(self)
+
+            # move platforms down
             for plat in self.platforms:
                 plat.rect.y += max(abs(self.player.vel.y), 2)
                 # remove off screen platforms
                 if plat.rect.top > ssize[1]:
                     plat.kill()
                     self.score += 1
+
+            # move mobs down
+            for mob in self.mobs:
+                mob.rect.y += max(abs(self.player.vel.y), 2)
+                # remove off screen platforms
+                if mob.rect.top > ssize[1]:
+                    mob.kill()
+
+            # move clouds down
+            for cloud in self.clouds:
+                cloud.rect.y += max(abs(self.player.vel.y), 2)// cloud.scroll_div
+                # remove off screen clouds
+                if cloud.rect.top > ssize[1]+ 500:
+                    cloud.kill()
 
 
         # die
@@ -137,16 +171,28 @@ class Game():
             self.playing = False
 
         # spawn new platforms:
-        while len(self.platforms) < 6:
-            x = random.randrange(0, ssize[0]-1)
-            y = random.randrange(-55, -30)
+        while len(self.platforms) < PLAT_COUNT:
+            x = random.randrange(0, ssize[0]-30)
+            y = random.randrange(-85, -40)
             p = Platform(self, x, y)
+            for trys in range(10):
+                hits = pg.sprite.spritecollide(p, self.platforms, False)
+                if hits:
+                    #print(f"platform overlap: {p.rect.x}, {p.rect.y}")
+                    p.rect.x = random.randrange(0, ssize[0]-30)
+                    p.rect.y = random.randrange(-85, -40)
+                else:
+                    break
+
+            if p.pow:
+                p.pow.rect.x = p.rect.x
+                p.pow.rect.bottom = p.rect.top - 5
+
 
     def draw(self):
         #game loop - draw
         self.screen.fill(BG_COLOUR)
         self.all_sprites.draw(self.screen)
-        self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, (255,255,255), ssize[0]//2, 15)
         pg.display.flip()
 
@@ -155,7 +201,7 @@ class Game():
 
         # music
         pg.mixer.music.load(str(self.snd_dir / "Yippee.wav"))
-        pg.mixer.music.play(loops=-1)
+        #pg.mixer.music.play(loops=-1)
 
         self.screen.fill(BG_COLOUR)
         self.draw_text(TITLE, 40, (255,255,255), ssize[0]//2, ssize[1]/4 )
@@ -175,7 +221,7 @@ class Game():
 
         # music
         pg.mixer.music.load(str(self.snd_dir / "Yippee.wav"))
-        pg.mixer.music.play(loops=-1)
+        #pg.mixer.music.play(loops=-1)
 
         self.screen.fill((255,0,0))
         self.draw_text("Game Over", 40, (255,255,255), ssize[0]//2, ssize[1] / 4 )
