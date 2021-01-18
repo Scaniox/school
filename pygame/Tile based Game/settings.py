@@ -3,7 +3,7 @@
 #constants
 TITLE = "tile"
 ssize = (1024, 768)
-fps = 60
+fps = 10000
 
 # colour schemes
 BG_COLOUR = (50,50,50)
@@ -14,4 +14,4 @@ gsize = [ssize[i] / tsize[i] for i in [0,1]]
 
 
 # player settings
-PLAYER_SPEED = 5
+PLAYER_SPEED = 15

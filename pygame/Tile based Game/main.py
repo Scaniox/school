@@ -4,6 +4,7 @@ import pygame as pg, random
 from settings import *
 from sprites import *
 from pathlib import Path
+from tilemap import *
 
 
 class Game():
@@ -23,12 +24,8 @@ class Game():
 
     def load_data(self):
         # load map data
-        self.map_data = []
         root = Path(__file__).parent
-
-        with (root / "map.txt") as file:
-            for line in file.read_text().split("\n"):
-                self.map_data.append(line)
+        self.map = Map(root / "map2.txt")
 
 
     def new(self):
@@ -37,7 +34,7 @@ class Game():
         self.walls = pg.sprite.LayeredUpdates()
 
         # generate sprites from map file
-        for row_index, row in enumerate(self.map_data):
+        for row_index, row in enumerate(self.map.data):
             for column_index, tile in enumerate(row):
 
                 if tile == "1":
@@ -45,6 +42,9 @@ class Game():
 
                 elif tile == "P":
                     self.player = Player(self, column_index, row_index)
+
+        # camera
+        self.camera = Camera(self.map.ssize)
 
 
     def run(self):
@@ -74,6 +74,7 @@ class Game():
     def update(self):
         # game loop - update
         self.all_sprites.update()
+        self.camera.update(self.player)
 
 
     def draw_grid(self):
@@ -86,7 +87,8 @@ class Game():
     def draw(self):
         #game loop - draw
         self.draw_grid()
-        self.all_sprites.draw(self.screen)
+        for sprite in self.all_sprites:
+            self.screen.blit(sprite.image, self.camera.apply(sprite))
         pg.display.flip()
 
 
