@@ -1,10 +1,10 @@
-# sprite classes for plaform game
-#modules
+# sprite classes for tile game
+# modules
 from settings import *
 import pygame as pg
 from pathlib import Path
-import xml.etree.ElementTree as ET
 import random
+import math
 
 vec = pg.math.Vector2
 
@@ -19,23 +19,59 @@ class Player(pg.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.pos = vec(x, y)
+        self.vel = vec(0, 0)
 
 
-    def collide_with_walls(self, dpos=[0,0]):
-        # checks if there is a wall at pos + dpos
-        for wall in self.game.walls:
-            if wall.pos == self.pos + vec(dpos):
-                return True
-        return False
+    def get_keys(self):
+        self.vel = vec(0, 0)
+        keys = pg.key.get_pressed()
+
+        if keys[pg.K_LEFT] or keys[pg.K_a]:
+            self.vel += vec(-1, 0)
+        elif keys[pg.K_RIGHT] or keys[pg.K_d]:
+            self.vel += vec(1, 0)
+        if keys[pg.K_UP] or keys[pg.K_w]:
+            self.vel += vec(0, -1)
+        elif keys[pg.K_DOWN] or keys[pg.K_s]:
+            self.vel += vec(0, 1)
+
+        if self.vel:
+            self.vel = self.vel.normalize()
+        self.vel *= PLAYER_SPEED
 
 
-    def move(self, dpos=[0,0]):
-        # try to move 
-        if not self.collide_with_walls(dpos):
-            self.pos += vec(dpos)
+    def collide_with_walls(self):
+        hits = pg.sprite.spritecollide(self, self.game.walls, False)
+        for hit in hits:
+            offset = hit.pos - self.pos
+            col_angle = offset.as_polar()[1] # angle anticlockwise from
+
+            if 137 < abs(col_angle):
+                # wall on right
+                self.vel.x = max(0, self.vel.x)
+                self.pos.x += 0.5/tsize[0]
+
+            elif 47 < col_angle < 133:
+                # wall on above
+                self.vel.y = min(0, self.vel.y)
+                self.pos.y -= 0.5/tsize[1]
+
+            elif -43 < col_angle < 43:
+                # wall on left
+                self.vel.x = min(0, self.vel.x)
+                self.pos.x -= 0.5/tsize[0]
+
+            elif -133 < col_angle < -47:
+                # wall below
+                self.vel.y = max(0, self.vel.y)
+                self.pos.y += 0.5/tsize[1]
 
 
     def update(self):
+        # movement
+        self.get_keys()
+        self.collide_with_walls()
+        self.pos += self.vel * self.game.dt
         self.rect.topleft = [self.pos[i] * tsize[i] for i in [0,1]]
 
 

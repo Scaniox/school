@@ -11,3 +11,7 @@ BG_COLOUR = (50,50,50)
 
 tsize = [32, 32]
 gsize = [ssize[i] / tsize[i] for i in [0,1]]
+
+
+# player settings
+PLAYER_SPEED = 5
