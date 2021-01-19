@@ -25,7 +25,13 @@ class Game():
     def load_data(self):
         # load map data
         root = Path(__file__).parent
+        img_folder = root / "img"
+
         self.map = Map(root / "map2.txt")
+
+        # player image
+        self.player_img = pg.image.load(str(img_folder / PLAYER_IMG)).convert_alpha()
+
 
 
     def new(self):

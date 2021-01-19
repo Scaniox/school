@@ -14,8 +14,7 @@ class Player(pg.sprite.Sprite):
         super().__init__(self.groups)
         self.game = game
 
-        self.image = pg.Surface(tsize)
-        self.image.fill((255,255,0))
+        self.image = self.game.player_img
 
         self.rect = self.image.get_rect()
         self.pos = vec(x, y)
@@ -27,13 +26,13 @@ class Player(pg.sprite.Sprite):
         keys = pg.key.get_pressed()
 
         if keys[pg.K_LEFT] or keys[pg.K_a]:
-            self.vel += vec(-1, 0)
+            self.vel.x -= 1
         elif keys[pg.K_RIGHT] or keys[pg.K_d]:
-            self.vel += vec(1, 0)
+            self.vel.x += 1
         if keys[pg.K_UP] or keys[pg.K_w]:
-            self.vel += vec(0, -1)
+            self.vel.y -= 1
         elif keys[pg.K_DOWN] or keys[pg.K_s]:
-            self.vel += vec(0, 1)
+            self.vel.y += 1
 
         if self.vel:
             self.vel = self.vel.normalize()
@@ -41,10 +40,12 @@ class Player(pg.sprite.Sprite):
 
 
     def collide_with_walls(self):
+        # overcomplicated collisions to remove wierd snaping
+        # - no dependency on velocities
         hits = pg.sprite.spritecollide(self, self.game.walls, False)
         for hit in hits:
             offset = hit.pos - self.pos
-            col_angle = offset.as_polar()[1] # angle anticlockwise from
+            col_angle = offset.as_polar()[1] # angle anticlockwise
 
             if 137 < abs(col_angle):
                 # wall on right

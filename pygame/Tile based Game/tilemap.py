@@ -12,7 +12,6 @@ class Map():
 
         self.gsize = [len(self.data[0]), len(self.data)-1]
         self.ssize = [self.gsize[i] * tsize[i] for i in [0,1]]
-        print(self.gsize)
 
 
 

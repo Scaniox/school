@@ -15,3 +15,4 @@ gsize = [ssize[i] / tsize[i] for i in [0,1]]
 
 # player settings
 PLAYER_SPEED = 15
+PLAYER_IMG = "topdown-shooter/PNG/Man Blue/manBlue_gun.png"
