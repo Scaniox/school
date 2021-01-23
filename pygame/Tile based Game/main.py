@@ -27,27 +27,48 @@ class Game():
         root = Path(__file__).parent
         img_folder = root / "img"
 
-        self.map = Map(root / "map2.txt")
+        self.map = Map(root / "map3.txt")
 
         # player image
         self.player_img = pg.image.load(str(img_folder / PLAYER_IMG)).convert_alpha()
-
+        # wall image
+        self.wall_img = pg.image.load(str(img_folder / WALL_IMG)).convert_alpha()
+        # zombie image
+        self.mob_img = pg.image.load(str(img_folder / MOB_IMG)).convert_alpha()
 
 
     def new(self):
         # groups
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.LayeredUpdates()
+        self.mobs = pg.sprite.LayeredUpdates()
 
         # generate sprites from map file
+        previous_row = [False] * (len(self.map.data[0])+1) # implementation note 1
         for row_index, row in enumerate(self.map.data):
             for column_index, tile in enumerate(row):
+                current_item = False
 
                 if tile == "1":
-                    Wall(self, column_index, row_index)
+                    wall = Wall(self, column_index, row_index)
+                    if type(previous_row[column_index]).__name__ == "Wall":
+                        wall.exposed_edges["L"] = False
+                        previous_row[column_index].exposed_edges["R"] = False
+
+                    if type(previous_row[column_index+1]).__name__ == "Wall":
+                        wall.exposed_edges["U"] = False
+                        previous_row[column_index+1].exposed_edges["D"] = False
+
+                    current_item = wall
 
                 elif tile == "P":
                     self.player = Player(self, column_index, row_index)
+                    current_item = self.player
+
+                elif tile == "M":
+                    current_item = Mob(self, column_index, row_index)
+
+                previous_row[column_index+1] = current_item
 
         # camera
         self.camera = Camera(self.map.ssize)
@@ -91,10 +112,11 @@ class Game():
 
 
     def draw(self):
+        pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
         #game loop - draw
-        self.draw_grid()
+        # self.draw_grid()
         for sprite in self.all_sprites:
-            self.screen.blit(sprite.image, self.camera.apply(sprite))
+            self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
         pg.display.flip()
 
 
@@ -122,8 +144,8 @@ class Game():
 
     def draw_text(self, text, size, color, x, y):
         # draws text
-        font = pg.font.Font(self.FONT_NAME, size)
-        text_surface = font.render(text, True, color)
+        font = pg.font.Font(pg.font.match_font(FONT_NAME), size)
+        text_surface = font.render(str(text), True, color)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x,y)
         self.screen.blit(text_surface, text_rect)

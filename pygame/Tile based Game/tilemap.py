@@ -1,6 +1,10 @@
 import pygame as pg
 from settings import *
 
+
+
+
+
 class Map():
     def __init__(self, filepath):
         # load map data
@@ -20,11 +24,11 @@ class Camera():
         self.camera = pg.Rect(0, 0, *size)
         self.size = size
 
-    def apply(self, entity):
-        return entity.rect.move(self.camera.topleft)
+    def apply(self, rect):
+        return rect.move(self.camera.topleft)
 
     def update(self, target):
-        self.camera.topleft = [-target.rect[i] + ssize[i]//2 for i in [0,1]]
+        self.camera.topleft = [-target.rect.center[i] + ssize[i]//2 for i in [0,1]]
 
         # limit scroll sizes
         self.camera.topleft = [max(min(self.camera[i], 0), -(self.size[i]- ssize[i])) for i in [0,1] ]
