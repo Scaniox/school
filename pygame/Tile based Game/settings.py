@@ -4,16 +4,14 @@ import pygame as pg
 #constants
 TITLE = "tile"
 ssize = (1024, 768)
+tsize = [64, 64]
+gsize = [ssize[i] / tsize[i] for i in [0,1]]
 fps = 10000
 FONT_NAME = "Arial"
 
 # colour schemes
 BG_COLOUR = (76, 45, 5)
 DRAW_DEBUG = False
-
-
-tsize = [64, 64]
-gsize = [ssize[i] / tsize[i] for i in [0,1]]
 
 
 # player settings
@@ -49,12 +47,11 @@ MOB_DAMAGE = 10
 MOB_KNOCKBACK = 2
 AVOID_RADIUS = 1
 DISTANCING_FORCE = 0.3
-
+DETECT_RADIUS = 8
 
 # effects
 MUZZLE_FLASHES = [f"smoke/whitePuff{i}.png" for i in [15,16,17,18]]
 FLASH_DURATION = 40
-
 
 # layers
 WALL_LAYER = 1
@@ -69,3 +66,12 @@ ITEM_IMAGES = {"health" : "health_pack.png"}
 HEALTH_PACK_AMOUNT = 20
 BOB_RANGE = 15
 BOB_SPEED = 0.06
+
+# sounds
+BG_MUSIC = "espionage.ogg"
+PLAYER_HIT_SOUNDS = [f"pain/{i}.wav" for i in [8, 9, 10, 11]]
+ZOMBIE_MOAN_SOUNDS = ["brains2.wav", "brains3.wav"] + [f"zombie-roar-{i}.wav" for i in range(1,7)]
+ZOMBIE_HIT_SOUNDS = ["splat-15.wav"]
+WEAPON_SOUNDS_GUN = ["sfx_weapon_singleshot2.wav"]
+EFFECTS_SOUNDS = {"level_start" : "level_start.wav",
+                  "health_up" : "health_pack.wav"}

@@ -93,6 +93,8 @@ class Player(pg.sprite.Sprite):
                 self.vel -= vec(KICKBACK, 0).rotate(-self.rot)
                 # muzzle flash
                 Muzzle_flash(self.game, pos)
+                # sound
+                random.choice(self.game.weapon_sounds["gun"]).play()
 
 
         if self.acc:
@@ -132,7 +134,7 @@ class Mob(pg.sprite.Sprite):
         super().__init__(self.groups)
         self.game = game
 
-        self.image = self.game.mob_img
+        self.image = self.game.mob_img.copy()
 
         self.pos = vec(x, y)
         self.acc = vec(0, 0)
@@ -144,6 +146,7 @@ class Mob(pg.sprite.Sprite):
 
         self.health = MOB_HEALTH
         self.speed = MOB_SPEED + random.uniform(-MOB_SPEED_UNCERTAINTY, MOB_SPEED_UNCERTAINTY)
+        self.target = game.player
 
 
     def avoid_mobs(self):
@@ -155,18 +158,26 @@ class Mob(pg.sprite.Sprite):
 
 
     def update(self):
-        # rotate
-        self.rot = (self.game.player.pos - self.pos).angle_to((1,0))
-        self.image = pg.transform.rotate(self.game.mob_img, self.rot)
+        self.acc = vec(0, 0)
 
-        # acceleration
-        self.acc = vec(1, 0).rotate(-self.rot)
-        self.avoid_mobs()
-        if self.acc:
-            self.acc.scale_to_length(self.speed)
-        self.acc -= self.vel * MOB_DRAG
+        target_dist = self.target.pos - self.pos
+        # chasing player
+        if target_dist.length_squared() < DETECT_RADIUS**2:
+            if random.random() < 0.002:
+                random.choice(self.game.zombie_moan_sounds).play()
+
+            # rotate
+            self.rot = target_dist.angle_to((1,0))
+            self.image = pg.transform.rotate(self.game.mob_img, self.rot)
+
+            # acceleration
+            self.acc = vec(1, 0).rotate(-self.rot)
+            self.avoid_mobs()
+            self.acc -= self.vel * MOB_DRAG
 
         # move
+        if self.acc:
+            self.acc.scale_to_length(self.speed)
         self.vel += self.acc * self.game.dt
         collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
         self.pos += self.vel * self.game.dt
@@ -185,6 +196,7 @@ class Mob(pg.sprite.Sprite):
         # death
         if self.health <= 0:
             self.kill()
+            random.choice(self.game.zombie_hit_sounds).play()
 
 
     def draw_health(self):
