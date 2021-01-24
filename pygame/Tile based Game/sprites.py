@@ -197,6 +197,7 @@ class Mob(pg.sprite.Sprite):
         if self.health <= 0:
             self.kill()
             random.choice(self.game.zombie_hit_sounds).play()
+            self.game.map_img.blit(self.game.splat, self.rect.topleft)
 
 
     def draw_health(self):

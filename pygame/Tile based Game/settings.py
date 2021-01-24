@@ -52,6 +52,7 @@ DETECT_RADIUS = 8
 # effects
 MUZZLE_FLASHES = [f"smoke/whitePuff{i}.png" for i in [15,16,17,18]]
 FLASH_DURATION = 40
+SPLAT_IMAGE = "splat/splat green.png"
 
 # layers
 WALL_LAYER = 1

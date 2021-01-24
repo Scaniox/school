@@ -56,6 +56,12 @@ class Game():
         self.mob_img = pg.image.load(str(img_folder / MOB_IMG)).convert_alpha()
         # bullet_img
         self.bullet_img = pg.image.load(str(img_folder / BULLET_IMG)).convert_alpha()
+        # splat image
+        self.splat = pg.image.load(str(img_folder / SPLAT_IMAGE)).convert_alpha()
+        self.splat = pg.transform.scale(self.splat, (64, 64))
+        # screen dimmer
+        self.dim_screen = pg.Surface(self.screen.get_size()).convert_alpha()
+        self.dim_screen.fill((0,0,0,180))
 
         # muzzle flashes
         self.gun_flashes = []
@@ -117,6 +123,7 @@ class Game():
 
         # camera
         self.camera = Camera(self.map.ssize)
+        self.paused = False
         self.effects_sounds["level_start"].play()
 
 
@@ -127,7 +134,8 @@ class Game():
         while self.playing:
             self.dt = self.clock.tick(fps) / 1000
             self.events()
-            self.update()
+            if not self.paused:
+                self.update()
             self.draw()
 
 
@@ -142,6 +150,8 @@ class Game():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.playing = False
+                if event.key == pg.K_p:
+                    self.paused = not self.paused
 
 
     def update(self):
@@ -202,6 +212,10 @@ class Game():
 
         # HUD
         draw_player_health(self.screen, 10, 10, self.player.health / PLAYER_HEALTH)
+
+        if self.paused:
+            self.screen.blit(self.dim_screen, (0,0))
+            self.draw_text("PAUSED", 105, (255,0,0), *[i//2 for i in ssize])
         pg.display.flip()
 
 
