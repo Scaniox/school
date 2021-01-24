@@ -45,6 +45,7 @@ def collide_with_group(sprite, other_group, col_funct=False, wall_drag=1):
 
 class Player(pg.sprite.Sprite):
     def __init__(self, game, x, y):
+        self._layer = PLAYER_LAYER
         self.groups = [game.all_sprites]
         super().__init__(self.groups)
         self.game = game
@@ -89,6 +90,8 @@ class Player(pg.sprite.Sprite):
                 Bullet(self.game, pos, dir)
                 #kickback
                 self.vel -= vec(KICKBACK, 0).rotate(-self.rot)
+                # muzzle flash
+                Muzzle_flash(self.game, pos)
 
 
         if self.acc:
@@ -119,6 +122,7 @@ class Player(pg.sprite.Sprite):
 
 class Mob(pg.sprite.Sprite):
     def __init__(self, game, x, y):
+        self._layer = MOB_LAYER
         self.groups = [game.all_sprites, game.mobs]
         super().__init__(self.groups)
         self.game = game
@@ -190,6 +194,7 @@ class Mob(pg.sprite.Sprite):
 
 class Bullet(pg.sprite.Sprite):
     def __init__(self, game, pos, dir):
+        self._layer = BULLET_LAYER
         self.game = game
         self.groups = [game.all_sprites, game.bullets]
         super().__init__(self.groups)
@@ -201,7 +206,7 @@ class Bullet(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
         self.rect.center = self.pos
-        self.start_time = pg.time.get_ticks()
+        self.spawn_time = pg.time.get_ticks()
 
     def update(self):
         self.pos += self.dir * BULLET_SPEED * self.game.dt
@@ -210,13 +215,14 @@ class Bullet(pg.sprite.Sprite):
         # deleting bullets
         if pg.sprite.spritecollideany(self, self.game.walls):
             self.kill()
-        if self.start_time + BULLET_LIFETIME < pg.time.get_ticks():
+        if self.spawn_time + BULLET_LIFETIME < pg.time.get_ticks():
             self.kill()
 
 
 
 class Wall(pg.sprite.Sprite):
     def __init__(self, game, x, y):
+        self._layer = WALL_LAYER
         self.groups = [game.all_sprites, game.walls]
         super().__init__(self.groups)
         self.game = game
@@ -242,3 +248,22 @@ class Obstacle(pg.sprite.Sprite):
 
         self.rect = pg.Rect(x, y, w, h)
         self.hit_rect = self.rect
+
+
+class Muzzle_flash(pg.sprite.Sprite):
+    def __init__(self, game, pos):
+        self._layer = EFFECTS_LAYER
+        self.groups = game.all_sprites
+        super().__init__(self.groups)
+        self.game = game
+
+        size = random.randint(20,50)
+        self.image = pg.transform.scale(random.choice(self.game.gun_flashes), [size]*2)
+        self.rect = self.image.get_rect()
+        self.pos = pos
+        self.rect.center = self.pos
+        self.spawn_time = pg.time.get_ticks()
+
+    def update(self):
+        if self.spawn_time + FLASH_DURATION < pg.time.get_ticks():
+            self.kill()

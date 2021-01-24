@@ -20,7 +20,7 @@ class Map():
 class TiledMap():
     def __init__(self, filename):
         tm = pytmx.load_pygame(filename, pixelalpha=True)
-        self.ssize = [tm.width * tm.tilewidth, tm.height * tm.tileheight]
+        self.ssize = [tm.width * tsize[0], tm.height * tsize[1]]
         self.tmxdata = tm
 
 
@@ -31,7 +31,8 @@ class TiledMap():
                 for x, y, gid in layer:
                     tile = ti(gid)
                     if tile:
-                        surface.blit(tile, (x * self.tmxdata.tilewidth, y * self.tmxdata.tileheight))
+                        tile = pg.transform.scale(tile, tsize)
+                        surface.blit(tile, (x * tsize[0], y * tsize[1]))
 
 
     def make_map(self):

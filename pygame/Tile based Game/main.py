@@ -54,13 +54,18 @@ class Game():
         # bullet_img
         self.bullet_img = pg.image.load(str(img_folder / BULLET_IMG)).convert_alpha()
 
+        # muzzle flashes
+        self.gun_flashes = []
+        for img in MUZZLE_FLASHES:
+            self.gun_flashes.append(pg.image.load(str(img_folder / img)).convert_alpha())
+
 
     def new(self):
         # groups
         self.all_sprites = pg.sprite.LayeredUpdates()
-        self.walls = pg.sprite.LayeredUpdates()
-        self.mobs = pg.sprite.LayeredUpdates()
-        self.bullets = pg.sprite.LayeredUpdates()
+        self.walls = pg.sprite.Group()
+        self.mobs = pg.sprite.Group()
+        self.bullets = pg.sprite.Group()
 
         for tile_object in self.map.tmxdata.objects:
             if tile_object.name == "player":
