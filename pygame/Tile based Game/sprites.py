@@ -5,6 +5,7 @@ import pygame as pg
 from pathlib import Path
 import random
 import math
+import pytweening as tween
 
 vec = pg.math.Vector2
 
@@ -254,6 +255,7 @@ class Obstacle(pg.sprite.Sprite):
         self.hit_rect = self.rect
 
 
+
 class Muzzle_flash(pg.sprite.Sprite):
     def __init__(self, game, pos):
         self._layer = EFFECTS_LAYER
@@ -282,6 +284,21 @@ class Item(pg.sprite.Sprite):
         self.game = game
         self.image = self.game.item_imgs[type]
 
+        self.pos = vec(pos)
         self.rect = self.image.get_rect()
-        self.rect.center = pos
+        self.rect.center = self.pos
         self.type = type
+
+        self.tween = tween.easeInOutSine
+        self.step = 0 # how far into the tween function
+        self.dir = 1
+
+    def update(self):
+        # bobbing motion
+        offset = BOB_RANGE * (self.tween(self.step / BOB_RANGE) - 0.5)
+        self.rect.centery = self.pos.y + offset * self.dir
+        self.step += BOB_SPEED
+        # reversing direction
+        if self.step > BOB_RANGE:
+            self.step = 0
+            self.dir *= -1
