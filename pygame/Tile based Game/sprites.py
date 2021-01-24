@@ -126,7 +126,6 @@ class Mob(pg.sprite.Sprite):
         self.image = self.game.mob_img
 
         self.pos = vec(x, y)
-
         self.acc = vec(0, 0)
         self.vel = vec(0, 0)
         self.rot = 0
@@ -135,14 +134,30 @@ class Mob(pg.sprite.Sprite):
         self.hit_rect = MOB_HIT_RECT.copy()
 
         self.health = MOB_HEALTH
+        self.speed = MOB_SPEED + random.uniform(-MOB_SPEED_UNCERTAINTY, MOB_SPEED_UNCERTAINTY)
+
+
+    def avoid_mobs(self):
+        for mob in self.game.mobs:
+            if mob != self:
+                dist = self.pos - mob.pos
+                if dist.length() < AVOID_RADIUS:
+                    self.acc += dist.normalize() * DISTANCING_FORCE
+
 
     def update(self):
         # rotate
         self.rot = (self.game.player.pos - self.pos).angle_to((1,0))
         self.image = pg.transform.rotate(self.game.mob_img, self.rot)
-        # move
-        self.acc = vec(MOB_SPEED, 0).rotate(-self.rot)
+
+        # acceleration
+        self.acc = vec(1, 0).rotate(-self.rot)
+        self.avoid_mobs()
+        if self.acc:
+            self.acc.scale_to_length(self.speed)
         self.acc -= self.vel * MOB_DRAG
+
+        # move
         self.vel += self.acc * self.game.dt
         collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
         self.pos += self.vel * self.game.dt
@@ -170,6 +185,7 @@ class Mob(pg.sprite.Sprite):
         self.health_bar = pg.Rect(0, 0, width, 7)
         if self.health < MOB_HEALTH:
             pg.draw.rect(self.image, col, self.health_bar)
+
 
 
 class Bullet(pg.sprite.Sprite):
