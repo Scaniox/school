@@ -59,6 +59,11 @@ class Game():
         for img in MUZZLE_FLASHES:
             self.gun_flashes.append(pg.image.load(str(img_folder / img)).convert_alpha())
 
+        # ITEM_IMAGES
+        self.item_imgs = {}
+        for name, img in ITEM_IMAGES.items():
+            self.item_imgs[name] = (pg.image.load(str(img_folder / img)).convert_alpha())
+
 
     def new(self):
         # groups
@@ -66,6 +71,7 @@ class Game():
         self.walls = pg.sprite.Group()
         self.mobs = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
+        self.items = pg.sprite.Group()
 
         for tile_object in self.map.tmxdata.objects:
             if tile_object.name == "player":
@@ -76,6 +82,9 @@ class Game():
 
             elif tile_object.name == "zombie":
                 Mob(self, tile_object.x//tsize[0], tile_object.y//tsize[1])
+
+            elif tile_object.name in ["health"]:
+                Item(self, [tile_object.x, tile_object.y], tile_object.name)
 
         # camera
         self.camera = Camera(self.map.ssize)
@@ -109,6 +118,13 @@ class Game():
         # game loop - update
         self.all_sprites.update()
         self.camera.update(self.player)
+
+        # player hits items
+        hits = pg.sprite.spritecollide(self.player, self.items, False)
+        for hit in hits:
+            if hit.type == "health" and self.player.health < PLAYER_HEALTH:
+                hit.kill()
+                self.player.add_health(HEALTH_PACK_AMOUNT)
 
         # mobs hitting players
         hits = pg.sprite.spritecollide(self.player, self.mobs, False)

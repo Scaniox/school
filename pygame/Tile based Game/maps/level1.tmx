@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="156">
+<map version="1.4" tiledversion="1.4.3" orientation="orthogonal" renderorder="right-down" width="50" height="30" tilewidth="64" tileheight="64" infinite="0" nextlayerid="6" nextobjectid="157">
  <tileset firstgid="1" name="spritesheet_tiles" tilewidth="64" tileheight="64" spacing="10" tilecount="540" columns="27">
   <image source="../img/topdown-shooter/Spritesheet/spritesheet_tiles.png" width="1988" height="1470"/>
  </tileset>
@@ -198,5 +198,6 @@
   <object id="152" name="zombie" x="1632" y="928"/>
   <object id="153" name="zombie" x="1552" y="784"/>
   <object id="154" name="zombie" x="1664" y="656"/>
+  <object id="156" name="health" x="208" y="576"/>
  </objectgroup>
 </map>

@@ -119,6 +119,10 @@ class Player(pg.sprite.Sprite):
         self.rect.center = old_center
 
 
+    def add_health(self, amount):
+        self.health = min(self.health + amount, PLAYER_HEALTH)
+
+
 
 class Mob(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -267,3 +271,17 @@ class Muzzle_flash(pg.sprite.Sprite):
     def update(self):
         if self.spawn_time + FLASH_DURATION < pg.time.get_ticks():
             self.kill()
+
+
+
+class Item(pg.sprite.Sprite):
+    def __init__(self, game, pos, type):
+        self._layer = ITEMS_LAYER
+        self.groups = [game.all_sprites, game.items]
+        super().__init__(self.groups)
+        self.game = game
+        self.image = self.game.item_imgs[type]
+
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+        self.type = type
