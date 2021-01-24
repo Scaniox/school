@@ -64,6 +64,7 @@ class Player(pg.sprite.Sprite):
         self.hit_rect.center = self.rect.center
         self.rect.center = [(self.pos[i]+0.5) * tsize[i]+0.5 for i in [0,1]]
 
+        self.health = PLAYER_HEALTH
         self.last_shot = 0
 
 
@@ -136,6 +137,8 @@ class Mob(pg.sprite.Sprite):
         self.rect.center = [(self.pos[i]+0.5) * tsize[i]+0.5 for i in [0,1]]
         self.hit_rect = MOB_HIT_RECT.copy()
 
+        self.health = MOB_HEALTH
+
     def update(self):
         # rotate
         self.rot = (self.game.player.pos - self.pos).angle_to((1,0))
@@ -152,12 +155,24 @@ class Mob(pg.sprite.Sprite):
         self.rect.center = [(self.pos[i]+0.5) * tsize[i] for i in [0,1]]
         self.hit_rect.center = self.rect.center
 
-
         # rotate image
         old_center = self.rect.center
         self.image = pg.transform.rotate(self.game.mob_img, self.rot)
         self.rect = self.image.get_rect()
         self.rect.center = old_center
+
+        # death
+        if self.health <= 0:
+            self.kill()
+
+
+    def draw_health(self):
+        col = (0,255,0) if self.health > 60 else (255,255,0) if self.health > 30 else (255,0,0)
+
+        width = int(self.rect.width * (self.health / MOB_HEALTH))
+        self.health_bar = pg.Rect(0, 0, width, 7)
+        if self.health < MOB_HEALTH:
+            pg.draw.rect(self.image, col, self.health_bar)
 
 
 class Bullet(pg.sprite.Sprite):

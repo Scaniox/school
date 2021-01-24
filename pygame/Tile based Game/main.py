@@ -6,6 +6,18 @@ from sprites import *
 from pathlib import Path
 from tilemap import *
 
+# HUD functions
+def draw_player_health(surf, x, y, pct):
+    pct = max(0, pct)
+
+    BAR_LENGTH = 100
+    BAR_HEIGHT = 20
+    fill = pct * BAR_LENGTH
+    outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+    fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
+    col = (0,255,0) if pct > 0.6 else (255,255,0) if pct > 0.3 else (255,0,0)
+    pg.draw.rect(surf, col, fill_rect)
+    pg.draw.rect(surf, (255,255,255), outline_rect, 2)
 
 class Game():
     def __init__(self):
@@ -20,6 +32,7 @@ class Game():
 
         self.load_data()
         self.running = True
+        self.playing = True
 
 
     def load_data(self):
@@ -98,7 +111,7 @@ class Game():
                 self.playing = False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    self.Playing = False
+                    self.playing = False
 
 
     def update(self):
@@ -106,10 +119,23 @@ class Game():
         self.all_sprites.update()
         self.camera.update(self.player)
 
+        # mobs hitting players
+        hits = pg.sprite.spritecollide(self.player, self.mobs, False)
+        for hit in hits:
+            self.player.health -= MOB_DAMAGE
+            hit.vel = vec(0, 0)
+
+            if self.player.health <= 0:
+                self.playing = False
+        # hit player back
+        if hits:
+            self.player.vel += vec(MOB_KNOCKBACK, 0).rotate(-hits[0].rot)
+
         # bullets hitting mobs
         hits = pg.sprite.groupcollide(self.mobs, self.bullets, False, True)
         for hit in hits:
-            hit.kill()
+            hit.health -= BULLET_DAMAGE
+            hit.vel = vec(0, 0)
 
 
     def draw_grid(self):
@@ -124,7 +150,12 @@ class Game():
         #game loop - draw
         # self.draw_grid()
         for sprite in self.all_sprites:
+            if isinstance(sprite, Mob):
+                sprite.draw_health()
             self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
+
+        # HUD
+        draw_player_health(self.screen, 10, 10, self.player.health / PLAYER_HEALTH)
         pg.display.flip()
 
 
@@ -150,10 +181,10 @@ class Game():
                     waiting = False
 
 
-    def draw_text(self, text, size, color, x, y):
+    def draw_text(self, text, size, colour, x, y):
         # draws text
         font = pg.font.Font(pg.font.match_font(FONT_NAME), size)
-        text_surface = font.render(str(text), True, color)
+        text_surface = font.render(str(text), True, colour)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x,y)
         self.screen.blit(text_surface, text_rect)
