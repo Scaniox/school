@@ -35,6 +35,8 @@ class Game():
         self.wall_img = pg.image.load(str(img_folder / WALL_IMG)).convert_alpha()
         # zombie image
         self.mob_img = pg.image.load(str(img_folder / MOB_IMG)).convert_alpha()
+        # bullet_img
+        self.bullet_img = pg.image.load(str(img_folder / BULLET_IMG)).convert_alpha()
 
 
     def new(self):
@@ -42,6 +44,7 @@ class Game():
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.LayeredUpdates()
         self.mobs = pg.sprite.LayeredUpdates()
+        self.bullets = pg.sprite.LayeredUpdates()
 
         # generate sprites from map file
         previous_row = [False] * (len(self.map.data[0])+1) # implementation note 1
@@ -102,6 +105,11 @@ class Game():
         # game loop - update
         self.all_sprites.update()
         self.camera.update(self.player)
+
+        # bullets hitting mobs
+        hits = pg.sprite.groupcollide(self.mobs, self.bullets, False, True)
+        for hit in hits:
+            hit.kill()
 
 
     def draw_grid(self):
