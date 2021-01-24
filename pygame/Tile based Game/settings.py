@@ -9,7 +9,7 @@ FONT_NAME = "Arial"
 
 # colour schemes
 BG_COLOUR = (76, 45, 5)
-
+DRAW_DEBUG = False
 
 
 tsize = [64, 64]

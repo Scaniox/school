@@ -21,25 +21,22 @@ def collide_with_group(sprite, other_group, col_funct=False, wall_drag=1):
         hits = pg.sprite.spritecollide(sprite, other_group, False )
 
     for hit in hits:
-        offset = hit.pos - sprite.pos
-        col_angle = -offset.angle_to((1,0)) # angle anticlockwise
-
-        if 135 <= abs(col_angle) and hit.exposed_edges["R"]:
+        if sprite.hit_rect.x+5 > hit.rect.right:
             # wall on left
             sprite.vel.x = max(0, sprite.vel.x)
             sprite.vel.y *= wall_drag
 
-        if 45 <= col_angle <= 135 and hit.exposed_edges["U"]:
+        elif sprite.hit_rect.bottom-5 < hit.rect.y:
             # wall below
             sprite.vel.y = min(0, sprite.vel.y)
             sprite.vel.x *= wall_drag
 
-        if -45 <= col_angle <= 45 and hit.exposed_edges["L"]:
+        elif sprite.hit_rect.right-5 < hit.rect.x:
             # wall on right
             sprite.vel.x = min(0, sprite.vel.x)
             sprite.vel.y *= wall_drag
 
-        if -135 <= col_angle <= -45 and hit.exposed_edges["D"]:
+        elif sprite.hit_rect.y+5 > hit.rect.bottom:
             # wall above
             sprite.vel.y = max(0, sprite.vel.y)
             sprite.vel.x *= wall_drag
@@ -104,9 +101,9 @@ class Player(pg.sprite.Sprite):
     def update(self):
         # movement
         self.get_keys()
-        collide_with_group(self, self.game.walls, col_funct=collide_hit_rect, wall_drag=WALL_DRAG)
         self.acc -= self.vel * PLAYER_DRAG
         self.vel += self.acc * self.game.dt
+        collide_with_group(self, self.game.walls, col_funct=collide_hit_rect, wall_drag=WALL_DRAG)
         self.pos += self.vel * self.game.dt
         self.rot = self.rot + (self.rot_speed * self.game.dt) % 360
 
@@ -146,8 +143,8 @@ class Mob(pg.sprite.Sprite):
         # move
         self.acc = vec(MOB_SPEED, 0).rotate(-self.rot)
         self.acc -= self.vel * MOB_DRAG
-        collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
         self.vel += self.acc * self.game.dt
+        collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
         self.pos += self.vel * self.game.dt
 
         # update rect
@@ -186,6 +183,7 @@ class Bullet(pg.sprite.Sprite):
         self.dir = dir.normalize()
 
         self.rect = self.image.get_rect()
+        self.hit_rect = self.rect
         self.rect.center = self.pos
         self.start_time = pg.time.get_ticks()
 
@@ -217,3 +215,14 @@ class Wall(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = vec(x, y)
         self.rect.topleft = [self.pos[i] * tsize[i] for i in [0,1]]
+
+
+
+class Obstacle(pg.sprite.Sprite):
+    def __init__(self, game, x, y, w, h):
+        self.groups = [game.walls]
+        super().__init__(self.groups)
+        self.game = game
+
+        self.rect = pg.Rect(x, y, w, h)
+        self.hit_rect = self.rect

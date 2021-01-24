@@ -39,8 +39,11 @@ class Game():
         # load map data
         root = Path(__file__).parent
         img_folder = root / "img"
+        map_folder = root / "maps"
 
-        self.map = Map(root / "map3.txt")
+        self.map = TiledMap(map_folder / "level1.tmx")
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
 
         # player image
         self.player_img = pg.image.load(str(img_folder / PLAYER_IMG)).convert_alpha()
@@ -59,32 +62,15 @@ class Game():
         self.mobs = pg.sprite.LayeredUpdates()
         self.bullets = pg.sprite.LayeredUpdates()
 
-        # generate sprites from map file
-        previous_row = [False] * (len(self.map.data[0])+1) # implementation note 1
-        for row_index, row in enumerate(self.map.data):
-            for column_index, tile in enumerate(row):
-                current_item = False
+        for tile_object in self.map.tmxdata.objects:
+            if tile_object.name == "player":
+                self.player = Player(self, tile_object.x//tsize[0], tile_object.y//tsize[1])
 
-                if tile == "1":
-                    wall = Wall(self, column_index, row_index)
-                    if type(previous_row[column_index]).__name__ == "Wall":
-                        wall.exposed_edges["L"] = False
-                        previous_row[column_index].exposed_edges["R"] = False
+            elif tile_object.name == "wall":
+                Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
 
-                    if type(previous_row[column_index+1]).__name__ == "Wall":
-                        wall.exposed_edges["U"] = False
-                        previous_row[column_index+1].exposed_edges["D"] = False
-
-                    current_item = wall
-
-                elif tile == "P":
-                    self.player = Player(self, column_index, row_index)
-                    current_item = self.player
-
-                elif tile == "M":
-                    current_item = Mob(self, column_index, row_index)
-
-                previous_row[column_index+1] = current_item
+            elif tile_object.name == "zombie":
+                Mob(self, tile_object.x//tsize[0], tile_object.y//tsize[1])
 
         # camera
         self.camera = Camera(self.map.ssize)
@@ -146,13 +132,21 @@ class Game():
 
 
     def draw(self):
-        pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
         #game loop - draw
-        # self.draw_grid()
+        pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
+
+        self.screen.blit(self.map_img, self.camera.apply(self.map_rect))
+
         for sprite in self.all_sprites:
             if isinstance(sprite, Mob):
                 sprite.draw_health()
             self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
+
+        if DRAW_DEBUG:
+            for sprite in self.all_sprites:
+                pg.draw.rect(self.screen, (0,255,255), self.camera.apply(sprite.hit_rect), 1)
+            for sprite in self.walls:
+                pg.draw.rect(self.screen, (0,255,255), self.camera.apply(sprite.hit_rect), 1)
 
         # HUD
         draw_player_health(self.screen, 10, 10, self.player.health / PLAYER_HEALTH)
