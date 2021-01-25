@@ -123,7 +123,7 @@ class Game():
             elif tile_object.name == "zombie":
                 Mob(self, tile_object.x//tsize[0], tile_object.y//tsize[1])
 
-            elif tile_object.name in ["health"]:
+            elif tile_object.name in ["health", "shotgun"]:
                 Item(self, [tile_object.x, tile_object.y], tile_object.name)
 
         # camera
@@ -172,6 +172,11 @@ class Game():
                 self.player.add_health(HEALTH_PACK_AMOUNT)
                 self.effects_sounds["health_up"].play()
 
+            elif hit.type == "shotgun":
+                hit.kill()
+                self.player.weapon = "shotgun"
+                self.effects_sounds["gun_pickup"].play()
+
         # mobs hitting players
         hits = pg.sprite.spritecollide(self.player, self.mobs, False)
         for hit in hits:
@@ -182,6 +187,7 @@ class Game():
                 self.playing = False
         #¬ hit player back
         if hits:
+            self.player.hit()
             self.player.vel += vec(MOB_KNOCKBACK, 0).rotate(-hits[0].rot)
             random.choice(self.player_hit_sounds).play()
 

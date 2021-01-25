@@ -6,6 +6,7 @@ from pathlib import Path
 import random
 import math
 import pytweening as tween
+import itertools
 
 vec = pg.math.Vector2
 
@@ -66,6 +67,7 @@ class Player(pg.sprite.Sprite):
         self.health = PLAYER_HEALTH
         self.last_shot = 0
         self.weapon = "pistol"
+        self.damaged = False
 
 
     def get_keys(self):
@@ -109,6 +111,10 @@ class Player(pg.sprite.Sprite):
             random.choice(self.game.weapon_sounds[self.weapon]).play()
 
 
+    def hit(self):
+        self.damaged = True
+        self.damage_alpha = itertools.chain(DAMAGE_ALPHA)
+
     def update(self):
         # movement
         self.get_keys()
@@ -123,6 +129,13 @@ class Player(pg.sprite.Sprite):
 
         old_center = self.rect.center
         self.image = pg.transform.rotate(self.game.player_img, self.rot)
+        # damage flashing effect
+        if self.damaged:
+            try:
+                self.image.fill((255,100,100, next(self.damage_alpha)), special_flags=pg.BLEND_RGBA_MULT)
+            except:
+                self.damaged = False
+
         self.rect = self.image.get_rect()
         self.rect.center = old_center
 
@@ -181,7 +194,7 @@ class Mob(pg.sprite.Sprite):
             self.acc -= self.vel * MOB_DRAG
 
         # move
-        if self.acc:
+        if self.acc.length() != 0:
             self.acc.scale_to_length(self.speed)
         self.vel += self.acc * self.game.dt
         collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
@@ -224,7 +237,7 @@ class Bullet(pg.sprite.Sprite):
         super().__init__(self.groups)
 
         self.pos = vec(pos)
-        self.dir = dir
+        self.dir = dir * random.uniform(0.9, 1.1)
 
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
