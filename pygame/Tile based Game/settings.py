@@ -7,7 +7,8 @@ ssize = (1024, 768)
 tsize = [64, 64]
 gsize = [ssize[i] / tsize[i] for i in [0,1]]
 fps = 10000
-FONT_NAME = "Arial"
+PAUSE_FONT = "img/fonts/ZOMBIE.TTF"
+HUD_FONT = "img/fonts/Impacted2.0.ttf"
 
 # colour schemes
 BG_COLOUR = (76, 45, 5)

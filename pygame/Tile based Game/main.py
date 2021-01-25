@@ -25,7 +25,6 @@ class Game():
     def __init__(self):
         pg.init()
         pg.mixer.init()
-        pg.key.set_repeat(100)
 
         pg.display.set_caption(TITLE)
         self.screen = pg.display.set_mode(ssize)
@@ -45,8 +44,6 @@ class Game():
         snd_folder = root / "snd"
 
         self.map = TiledMap(map_folder / "level1.tmx")
-        self.map_img = self.map.make_map()
-        self.map_rect = self.map_img.get_rect()
 
         # player image
         self.player_img = pg.image.load(str(img_folder / PLAYER_IMG)).convert_alpha()
@@ -113,6 +110,10 @@ class Game():
         self.bullets = pg.sprite.Group()
         self.items = pg.sprite.Group()
 
+        # generate map
+        self.map_img = self.map.make_map()
+        self.map_rect = self.map_img.get_rect()
+
         for tile_object in self.map.tmxdata.objects:
             if tile_object.name == "player":
                 self.player = Player(self, tile_object.x//tsize[0], tile_object.y//tsize[1])
@@ -164,6 +165,10 @@ class Game():
         self.all_sprites.update()
         self.camera.update(self.player)
 
+        # game over condition
+        if len(self.mobs) == 0:
+            self.playing = False
+
         # player hits items
         hits = pg.sprite.spritecollide(self.player, self.items, False)
         for hit in hits:
@@ -193,9 +198,10 @@ class Game():
 
         # bullets hitting mobs
         hits = pg.sprite.groupcollide(self.mobs, self.bullets, False, True)
-        for hit in hits:
-            hit.health -= WEAPONS[self.player.weapon]["damage"] * len(hits[hit])
-            hit.vel = vec(0, 0)
+        for mob in hits:
+            for b in hits[mob]:
+                mob.health -= b.damage
+            mob.vel = vec(0, 0)
 
     def draw_grid(self):
         for x in range(0, ssize[0], tsize[0]):
@@ -223,10 +229,11 @@ class Game():
 
         # HUD
         draw_player_health(self.screen, 10, 10, self.player.health / PLAYER_HEALTH)
+        self.draw_text(f"Zombies: {len(self.mobs)}", HUD_FONT, 30, (255,255,255), ssize[0]-100, 10)
 
         if self.paused:
             self.screen.blit(self.dim_screen, (0,0))
-            self.draw_text("PAUSED", 105, (255,0,0), *[i//2 for i in ssize])
+            self.draw_text("PAUSED", PAUSE_FONT, 105, (255,0,0), *[i//2 for i in ssize])
         pg.display.flip()
 
 
@@ -235,30 +242,37 @@ class Game():
 
 
     def show_go_screen(self):
-        pass
+        self.screen.fill((0,0,0))
+        self.draw_text("GAME OVER", PAUSE_FONT, 100 , (255,0,0), *[i//2 for i in ssize])
+
+        self.draw_text("Press a key to start", PAUSE_FONT, 75 , (255,255,255), ssize[0]//2, ssize[1]*3/4)
+        pg.display.flip()
+        self.wait_for_key()
 
 
     def wait_for_key(self):
         # delay until a key is pressed
-        waiting = True
-        while waiting:
-            self.clock.tick(fps)
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    waiting = False
-                    self.running = False
+        for state in [pg.KEYDOWN, pg.KEYUP]: # wait for a key to go down and back up again
+            waiting = True
+            while waiting:
+                self.clock.tick(fps)
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        waiting = False
+                        self.running = False
 
-                if event.type == pg.KEYUP:
-                    waiting = False
+                    if event.type == state:
+                        waiting = False
 
 
-    def draw_text(self, text, size, colour, x, y):
+    def draw_text(self, text, font_name, size, colour, x, y):
         # draws text
-        font = pg.font.Font(pg.font.match_font(FONT_NAME), size)
+        font = pg.font.Font(font_name, size)
         text_surface = font.render(str(text), True, colour)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x,y)
         self.screen.blit(text_surface, text_rect)
+
 
 g = Game()
 g.show_start_screen()

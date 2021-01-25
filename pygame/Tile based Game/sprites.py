@@ -101,7 +101,7 @@ class Player(pg.sprite.Sprite):
             pos = self.rect.center + vec(WEAPONS[self.weapon]["barrel_offset"]).rotate(-self.rot)
             for shot in range(WEAPONS[self.weapon]["bullet_count"]):
                 dir = vec(1,0).rotate(-self.rot + random.uniform(-WEAPONS[self.weapon]["spread"], WEAPONS[self.weapon]["spread"]))
-                Bullet(self.game, pos, dir * WEAPONS[self.weapon]["bullet_speed"])
+                Bullet(self.game, pos, dir * WEAPONS[self.weapon]["bullet_speed"], WEAPONS[self.weapon]["damage"])
 
             #kickback
             self.vel -= vec(WEAPONS[self.weapon]["kickback"], 0).rotate(-self.rot)
@@ -229,7 +229,7 @@ class Mob(pg.sprite.Sprite):
 
 
 class Bullet(pg.sprite.Sprite):
-    def __init__(self, game, pos, dir):
+    def __init__(self, game, pos, dir, damage):
         self._layer = BULLET_LAYER
         self.game = game
         self.groups = [game.all_sprites, game.bullets]
@@ -238,6 +238,7 @@ class Bullet(pg.sprite.Sprite):
 
         self.pos = vec(pos)
         self.dir = dir * random.uniform(0.9, 1.1)
+        self.damage = damage
 
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
