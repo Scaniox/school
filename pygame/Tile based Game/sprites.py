@@ -65,6 +65,7 @@ class Player(pg.sprite.Sprite):
 
         self.health = PLAYER_HEALTH
         self.last_shot = 0
+        self.weapon = "pistol"
 
 
     def get_keys(self):
@@ -83,25 +84,29 @@ class Player(pg.sprite.Sprite):
             self.acc -= vec(0.5,0).rotate(-self.rot)
 
         if keys[pg.K_SPACE]:
-            now = pg.time.get_ticks()
-            if now - self.last_shot > BULLET_RATE:
-                self.last_shot = now
-                dir = vec(1,0).rotate(-self.rot + random.uniform(-GUN_SPREAD, GUN_SPREAD))
-                pos = self.rect.center + vec(BARREL_OFFSET).rotate(-self.rot)
-                Bullet(self.game, pos, dir)
-                #kickback
-                self.vel -= vec(KICKBACK, 0).rotate(-self.rot)
-                # muzzle flash
-                Muzzle_flash(self.game, pos)
-                # sound
-                random.choice(self.game.weapon_sounds["gun"]).play()
-
+            self.shoot()
 
         if self.acc:
             self.acc = self.acc.normalize()
 
         self.acc *= PLAYER_SPEED
         self.rot_speed *= PLAYER_ROT_SPEED
+
+    def shoot(self):
+        now = pg.time.get_ticks()
+        if now - self.last_shot > WEAPONS[self.weapon]["rate"]:
+            self.last_shot = now
+            pos = self.rect.center + vec(WEAPONS[self.weapon]["barrel_offset"]).rotate(-self.rot)
+            for shot in range(WEAPONS[self.weapon]["bullet_count"]):
+                dir = vec(1,0).rotate(-self.rot + random.uniform(-WEAPONS[self.weapon]["spread"], WEAPONS[self.weapon]["spread"]))
+                Bullet(self.game, pos, dir * WEAPONS[self.weapon]["bullet_speed"])
+
+            #kickback
+            self.vel -= vec(WEAPONS[self.weapon]["kickback"], 0).rotate(-self.rot)
+            # muzzle flash
+            Muzzle_flash(self.game, pos)
+            # sound
+            random.choice(self.game.weapon_sounds[self.weapon]).play()
 
 
     def update(self):
@@ -215,11 +220,11 @@ class Bullet(pg.sprite.Sprite):
         self._layer = BULLET_LAYER
         self.game = game
         self.groups = [game.all_sprites, game.bullets]
+        self.image = self.game.bullet_imgs[WEAPONS[self.game.player.weapon]["bullet_size"]]
         super().__init__(self.groups)
-        self.image = pg.transform.scale(game.bullet_img, [i//2 for i in self.game.bullet_img.get_size()])
 
-        self.pos = pos
-        self.dir = dir.normalize()
+        self.pos = vec(pos)
+        self.dir = dir
 
         self.rect = self.image.get_rect()
         self.hit_rect = self.rect
@@ -227,13 +232,13 @@ class Bullet(pg.sprite.Sprite):
         self.spawn_time = pg.time.get_ticks()
 
     def update(self):
-        self.pos += self.dir * BULLET_SPEED * self.game.dt
+        self.pos += self.dir * self.game.dt
         self.rect.center = self.pos
 
         # deleting bullets
         if pg.sprite.spritecollideany(self, self.game.walls):
             self.kill()
-        if self.spawn_time + BULLET_LIFETIME < pg.time.get_ticks():
+        if self.spawn_time + WEAPONS[self.game.player.weapon]["bullet_lifetime"] < pg.time.get_ticks():
             self.kill()
 
 

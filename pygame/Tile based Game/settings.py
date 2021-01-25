@@ -22,15 +22,27 @@ PLAYER_IMG = "topdown-shooter/PNG/Man Blue/manBlue_gun.png"
 PLAYER_HIT_RECT = pg.Rect(0, 0, 35, 35)
 PLAYER_HEALTH = 250
 
-# gun settings
+# weapon settings
 BULLET_IMG = "bullet.png"
-BULLET_SPEED = 1000
-BULLET_LIFETIME = 1000
-BULLET_RATE = 150
-BARREL_OFFSET = (20,10)
-KICKBACK = 0.5
-GUN_SPREAD = 5
-BULLET_DAMAGE = 10
+WEAPONS = {}
+WEAPONS["pistol"] = {"bullet_speed" : 1000,
+                     "bullet_lifetime" : 1000,
+                     "rate" : 150,
+                     "barrel_offset" : (20,10),
+                     "kickback" : 0.5,
+                     "spread" : 5,
+                     "damage" : 10,
+                     "bullet_size" : "lg",
+                     "bullet_count" : 1}
+WEAPONS["shotgun"] = {"bullet_speed" : 800,
+                     "bullet_lifetime" : 500,
+                     "rate" : 250,
+                     "barrel_offset" : (20,10),
+                     "kickback" : 0.75,
+                     "spread" : 20,
+                     "damage" : 5,
+                     "bullet_size" : "sm",
+                     "bullet_count" : 12}
 
 # walls
 WALL_IMG = "tileGreen_39.png"
@@ -73,6 +85,8 @@ BG_MUSIC = "espionage.ogg"
 PLAYER_HIT_SOUNDS = [f"pain/{i}.wav" for i in [8, 9, 10, 11]]
 ZOMBIE_MOAN_SOUNDS = ["brains2.wav", "brains3.wav"] + [f"zombie-roar-{i}.wav" for i in range(1,7)]
 ZOMBIE_HIT_SOUNDS = ["splat-15.wav"]
-WEAPON_SOUNDS_GUN = ["sfx_weapon_singleshot2.wav"]
+WEAPON_SOUNDS = {"pistol" : ["sfx_weapon_singleshot2.wav"],
+                 "shotgun" : ["shotgun.wav"]}
+
 EFFECTS_SOUNDS = {"level_start" : "level_start.wav",
                   "health_up" : "health_pack.wav"}

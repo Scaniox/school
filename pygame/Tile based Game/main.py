@@ -54,8 +54,10 @@ class Game():
         self.wall_img = pg.image.load(str(img_folder / WALL_IMG)).convert_alpha()
         # zombie image
         self.mob_img = pg.image.load(str(img_folder / MOB_IMG)).convert_alpha()
-        # bullet_img
-        self.bullet_img = pg.image.load(str(img_folder / BULLET_IMG)).convert_alpha()
+        # bullet_imgs
+        self.bullet_imgs = {}
+        self.bullet_imgs["lg"] = pg.image.load(str(img_folder / BULLET_IMG)).convert_alpha()
+        self.bullet_imgs["sm"] = pg.transform.scale(self.bullet_imgs["lg"], (10, 10))
         # splat image
         self.splat = pg.image.load(str(img_folder / SPLAT_IMAGE)).convert_alpha()
         self.splat = pg.transform.scale(self.splat, (64, 64))
@@ -81,9 +83,12 @@ class Game():
             self.effects_sounds[name] = pg.mixer.Sound(str(snd_folder / path))
         # weapon sounds
         self.weapon_sounds = {}
-        self.weapon_sounds["gun"] = []
-        for path in WEAPON_SOUNDS_GUN:
-            self.weapon_sounds["gun"].append(pg.mixer.Sound(str(snd_folder / path)))
+        for weapon_name, snd_paths in WEAPON_SOUNDS.items():
+            self.weapon_sounds[weapon_name] = []
+            for path in snd_paths:
+                snd = pg.mixer.Sound(str(snd_folder / path))
+                snd.set_volume(0.3)
+                self.weapon_sounds[weapon_name].append(snd)
         # zombie moan sounds
         self.zombie_moan_sounds = []
         for path in ZOMBIE_MOAN_SOUNDS:
@@ -183,7 +188,7 @@ class Game():
         # bullets hitting mobs
         hits = pg.sprite.groupcollide(self.mobs, self.bullets, False, True)
         for hit in hits:
-            hit.health -= BULLET_DAMAGE
+            hit.health -= WEAPONS[self.player.weapon]["damage"] * len(hits[hit])
             hit.vel = vec(0, 0)
 
     def draw_grid(self):
