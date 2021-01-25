@@ -72,6 +72,12 @@ class Game():
         for name, img in ITEM_IMAGES.items():
             self.item_imgs[name] = (pg.image.load(str(img_folder / img)).convert_alpha())
 
+        # lighting effects
+        self.fog = pg.Surface(ssize)
+        self.fog.fill(NIGHT_COLOUR),
+        self.light_mask = pg.image.load(str(img_folder / LIGHT_MASK)).convert_alpha()
+        self.light_mask = pg.transform.scale(self.light_mask, LIGHT_RADIUS)
+
         # sounds
         pg.mixer.music.load(str(snd_folder / BG_MUSIC))
         # effects
@@ -132,6 +138,8 @@ class Game():
         self.paused = False
         self.effects_sounds["level_start"].play()
 
+        self.night = False
+
 
     def run(self):
         # game loop
@@ -158,6 +166,8 @@ class Game():
                     self.playing = False
                 if event.key == pg.K_p:
                     self.paused = not self.paused
+                if event.key == pg.K_n:
+                    self.night = not self.night
 
 
     def update(self):
@@ -210,6 +220,15 @@ class Game():
             pg.draw.line(self.screen, (200,200,200), (0, y), (ssize[0], y))
 
 
+    def render_fog(self):
+        # draw light mask onto fog image
+        self.fog.fill(NIGHT_COLOUR)
+        self.light_rect = self.light_mask.get_rect()
+        self.light_rect.center = self.camera.apply(self.player.rect).center
+        self.fog.blit(self.light_mask, self.light_rect)
+        self.screen.blit(self.fog, (0, 0), special_flags=pg.BLEND_MULT)
+
+
     def draw(self):
         #game loop - draw
         pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
@@ -226,6 +245,10 @@ class Game():
                 pg.draw.rect(self.screen, (0,255,255), self.camera.apply(sprite.hit_rect), 1)
             for sprite in self.walls:
                 pg.draw.rect(self.screen, (0,255,255), self.camera.apply(sprite.hit_rect), 1)
+
+        # lighting
+        if self.night:
+            self.render_fog()
 
         # HUD
         draw_player_health(self.screen, 10, 10, self.player.health / PLAYER_HEALTH)
