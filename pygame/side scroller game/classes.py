@@ -121,6 +121,11 @@ class Camera(pg.sprite.Sprite):
 
 
     def update(self):
+<<<<<<< HEAD
+=======
+        if self.target.top < cfg.camera_edge_padding:
+            if self.pos.x <
+>>>>>>> 0ad9cf35ba84e5bf37ea56966b4649c818efe2f2
 
         self.pos.x = -max(0, min((self.game.bsize[0])*cfg.tsize - cfg.ssize[0], self.target.rect.centerx - cfg.ssize[0] // 2))
         self.pos.y = -max(0, min((self.game.bsize[1])*cfg.tsize - cfg.ssize[1], self.target.rect.centery - cfg.ssize[1] // 2))
