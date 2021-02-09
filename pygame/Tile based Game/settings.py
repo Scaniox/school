@@ -2,7 +2,7 @@
 import pygame as pg
 
 #constants
-TITLE = "tile"
+TITLE = "zombie game"
 ssize = (1024, 768)
 tsize = [64, 64]
 gsize = [ssize[i] / tsize[i] for i in [0,1]]

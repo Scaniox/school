@@ -231,7 +231,7 @@ class Game():
 
     def draw(self):
         #game loop - draw
-        pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
+        #pg.display.set_caption(f"tile game: {self.clock.get_fps():.2f}fps")
 
         self.screen.blit(self.map_img, self.camera.apply(self.map_rect))
 

@@ -10,7 +10,7 @@ class Player(pg.sprite.Sprite):
         self.groups = [self.game.draw_sprites, self.game.update_sprites]
         super().__init__(self.groups)
 
-        self.pos = vec2(pos)
+        self.pos = vec2(pos) * cfg.tsize
         self.vel = vec2(0, 0)
         self.acc = vec2(0, cfg.grav)
 
@@ -32,25 +32,26 @@ class Player(pg.sprite.Sprite):
             self.vel.y -= cfg.jump_power
 
 
-    def collision_vel_cancel(self):
+    def collision_vel_cancel_old(self):
         hits = pg.sprite.spritecollide(self, self.game.walls, False)
         for block in hits:
-            #self.vel.y = min(0 ,self.vel.y)
 
-            # block bellow
-            if self.rect.bottom >= block.rect.top:
+            # block below
+            if block.rect.top >= self.rect.bottom-10:
+                print("below")
                 self.vel.y = min(0, self.vel.y)
-                self.rect.bottom = block.rect.top
             # block above
-            elif self.rect.top <= block.rect.bottom:
+            elif self.rect.top+10 >= block.rect.bottom:
+                print("above")
                 self.vel.y = max(0, self.vel.y)
-                self.rect.top = block.rect.bottom
 
             # block right
-            if self.rect.right >= block.rect.left:
+            if block.rect.left >= self.rect.right-10:
+                print("right")
                 self.vel.x = min(0, self.vel.x)
             # block left
-            elif self.rect.left <= block.rect.right:
+            elif self.rect.left+10 >= block.rect.right:
+                print("left")
                 self.vel.x = max(0, self.vel.x)
 
         if hits:
@@ -58,22 +59,39 @@ class Player(pg.sprite.Sprite):
         else:
             self.colliding = False
 
+    def collision_vel_cancel(self):
+        self.colliding = False
+        for offset in [(0,1,"top","bottom"), (0,-1,"bottom","top"), (1,0,"right","left"), (-1,0,"right","left")]:
+            self.rect.center += vec2(offset[:2])
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            self.rect.center -= vec2(offset[:2])
+            self.colliding |= bool(hits)
+            if hits:
+                print(offset[2])
+
+            for block in hits:
+                self.rect.__setattr__(offset[2], block.rect.__getattribute__(offset[3]))
+                if abs(offset[0]): # x collisions
+                    self.vel.x = 0
+                else:              # y collsions
+                    self.vel.y = 0
+
 
     def update(self):
         self.acc = vec2(0, cfg.grav)
         self.keys()
         self.vel += self.acc * self.game.dt
+        self.collision_vel_cancel()
         if self.colliding:
             self.vel.x *= cfg.friction
-        self.collision_vel_cancel()
         self.pos += self.vel * self.game.dt
 
-        self.rect.topleft = vec2(self.pos) * cfg.tsize
+        self.rect.topleft = vec2(self.pos)
 
 
 
 class Block(pg.sprite.Sprite):
-    def __init__(self, game, pos, ):
+    def __init__(self, game, pos):
         self.game = game
         self.groups = [self.game.draw_sprites, self.game.update_sprites, self.game.walls]
         super().__init__(self.groups)
@@ -121,11 +139,5 @@ class Camera(pg.sprite.Sprite):
 
 
     def update(self):
-<<<<<<< HEAD
-=======
-        if self.target.top < cfg.camera_edge_padding:
-            if self.pos.x <
->>>>>>> 0ad9cf35ba84e5bf37ea56966b4649c818efe2f2
-
         self.pos.x = -max(0, min((self.game.bsize[0])*cfg.tsize - cfg.ssize[0], self.target.rect.centerx - cfg.ssize[0] // 2))
         self.pos.y = -max(0, min((self.game.bsize[1])*cfg.tsize - cfg.ssize[1], self.target.rect.centery - cfg.ssize[1] // 2))

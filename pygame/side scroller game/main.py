@@ -34,13 +34,13 @@ class Game():
             for row, line in enumerate(lines):
                 for column, block in enumerate(line):
                     #print(block)
-                    pos = vec2(column, row)
+                    grid_pos = vec2(column, row)
                     if block == "p":
-                        Block(self, vec2(pos))
+                        Block(self, vec2(grid_pos))
                     elif block == "s":
-                        self.player = Player(self, vec2(pos))
+                        self.player = Player(self, vec2(grid_pos))
                     elif block == "f":
-                        Flag(self, vec2(pos))
+                        Flag(self, vec2(grid_pos))
 
         self.camera = Camera(self, self.player)
 
