@@ -194,8 +194,11 @@ class Mob(pg.sprite.Sprite):
             self.acc -= self.vel * MOB_DRAG
 
         # move
-        if self.acc.length() != 0:
+        try:
             self.acc.scale_to_length(self.speed)
+        except Exception as e:
+            pass
+            
         self.vel += self.acc * self.game.dt
         collide_with_group(self, self.game.walls, col_funct = collide_hit_rect)
         self.pos += self.vel * self.game.dt
